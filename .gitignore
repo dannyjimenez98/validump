@@ -31,3 +31,6 @@ go.work.sum
 # .vscode/
 
 .DS_Store
+
+# validump db backups directories
+backups/
