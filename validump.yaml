@@ -1,5 +1,0 @@
-databases:
-    default:
-        type: postgres
-        connection_str: DB_CONNECTION_STR
-        backup_dir: backups

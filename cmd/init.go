@@ -1,8 +1,10 @@
 package cmd
 
 import (
+	"errors"
 	"fmt"
 	"os"
+	"path/filepath"
 
 	"github.com/dannyjimenez98/validump/internal/config"
 	"github.com/spf13/cobra"
@@ -12,23 +14,40 @@ import (
 // initCmd represents the init command
 var initCmd = &cobra.Command{
 	Use: "init",
-	Short: "Create initial configuration file and database backup directory.",
-	Long: `Create validump.yaml and a backups directory in the current directory.
+	Short: "Create initial configuration file",
+	Long: `Create validump.yaml file for the database configuration.
 
-	The configuration specifies the identifying name for the database (initialized as "default"),
-	as well as the type of database (postgresql by default), the database connection string (reads
-	from DB_CONNECTION_STR in .env file, and the filepath for the database backup directory
-	(default: "./backups").
+	The configuration file is generated with default placeholder values where the user can
+	replace them with ones for their own database. By default, the file will be created at 
+	~/.config/validump/validump.yaml (Mac, Linux) or %APPDATA%\validump\validump.yaml (Windows).
+
+	The configuration specifies the alias for the database (initially set as "db-alias"),
+	as well as the database engine, connection variables, and the filepath specifying where
+	the directory that will contain the backup files for each database will be located
+	(default: "~/validump/backups").
 	
 	Edit validump.yaml to match your database settings. Existing configuration
 	files are never overwritten.`,
 	RunE: func(cmd *cobra.Command, args []string) error {
+		filename := "validump.yaml"
+		if _, err := os.Stat(filepath.Join(configPath, filename)); !errors.Is(err, os.ErrNotExist) {
+			return fmt.Errorf("%s already exists and was not overwritten", filepath.Join(configPath, filename))
+		}
+
+		// generate initial config template with default values
+		home, err := os.UserHomeDir()
+		if err != nil {
+			return fmt.Errorf("resolve home directory path: %w", err)
+		}
 		cfg := &config.Config{
+			BackupDir: filepath.Join(home, "validump", "backups"),
 			Databases: map[string]config.DBConfig{
-				"default": {
-					Type: "postgres",
-					ConnectionStr: "DB_CONNECTION_STR",
-					BackupDir: "backups",
+				"db-alias": {
+					Engine: "postgres",
+					Host: "localhost",
+					Port: 5432,
+					Username: "dbuser",
+					DBName: "dbname",
 				},
 			},
 		}
@@ -38,17 +57,15 @@ var initCmd = &cobra.Command{
 			return fmt.Errorf("marshal database configuration: %w", err)
 		}
 		
-		// create backups directory if it does not exist
-		if err := os.Mkdir(cfg.Databases["default"].BackupDir, 0700); err != nil {
-			return fmt.Errorf("create backup directory: %w", err)
+		// create config directory path if it does not exist
+		if err := os.MkdirAll(configPath, 0700); err != nil {
+			return fmt.Errorf("create validump config directory: %w", err)
 		}
 
-		filename := "validump.yaml"
-
 		// create initial yaml config file if it does not exist
-		file, err := os.OpenFile(filename, os.O_WRONLY|os.O_EXCL|os.O_CREATE, 0644)
+		file, err := os.OpenFile(filepath.Join(configPath, filename), os.O_WRONLY|os.O_EXCL|os.O_CREATE, 0644)
 		if err != nil {
-			return fmt.Errorf("initialize validump configuration: %w", err)
+			return fmt.Errorf("create validump configuration template: %w", err)
 		}
 		defer file.Close()
 
