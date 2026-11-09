@@ -13,7 +13,7 @@ import (
 
 // initCmd represents the init command
 var initCmd = &cobra.Command{
-	Use: "init",
+	Use:   "init",
 	Short: "Create initial configuration file",
 	Long: `Create validump.yaml file for the database configuration.
 
@@ -28,10 +28,17 @@ var initCmd = &cobra.Command{
 	
 	Edit validump.yaml to match your database settings. Existing configuration
 	files are never overwritten.`,
+	Annotations: map[string]string{
+		"skipLoadConfig": "true",
+	},
 	RunE: func(cmd *cobra.Command, args []string) error {
-		filename := "validump.yaml"
-		if _, err := os.Stat(filepath.Join(configPath, filename)); !errors.Is(err, os.ErrNotExist) {
-			return fmt.Errorf("%s already exists and was not overwritten", filepath.Join(configPath, filename))
+		cfgPath, err := getConfigPath()
+		if err != nil {
+			return fmt.Errorf("initialize configuration file: %w", err)
+		}
+
+		if _, err := os.Stat(cfgPath); !errors.Is(err, os.ErrNotExist) {
+			return fmt.Errorf("%s already exists and was not overwritten", cfgPath)
 		}
 
 		// generate initial config template with default values
@@ -58,12 +65,12 @@ var initCmd = &cobra.Command{
 		}
 		
 		// create config directory path if it does not exist
-		if err := os.MkdirAll(configPath, 0700); err != nil {
+		if err := os.MkdirAll(filepath.Dir(cfgPath), 0700); err != nil {
 			return fmt.Errorf("create validump config directory: %w", err)
 		}
 
 		// create initial yaml config file if it does not exist
-		file, err := os.OpenFile(filepath.Join(configPath, filename), os.O_WRONLY|os.O_EXCL|os.O_CREATE, 0644)
+		file, err := os.OpenFile(cfgPath, os.O_WRONLY|os.O_EXCL|os.O_CREATE, 0644)
 		if err != nil {
 			return fmt.Errorf("create validump configuration template: %w", err)
 		}

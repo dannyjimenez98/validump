@@ -4,60 +4,72 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
-	"runtime"
 
+	"github.com/dannyjimenez98/validump/internal/config"
 	"github.com/spf13/cobra"
 )
 
-var	configPath string
+var cfgPath string
 
 var rootCmd = &cobra.Command{
-	Use: "validump",
+	Use:   "validump",
 	Short: "A CLI tool for database backups and recovery validation.",
 	Long: `Validump is a CLI-based database backup utility and disaster recovery validation tool.
 
 	It allows for scheduled backups of your database and tests the backed up data in a containerized
 	enviroment to ensure that the database can be successfully recovered in the event of an emergency.`,
+	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+		if cmd.Annotations["skipLoadConfig"] != "true" {
+			path, err := getConfigPath()
+			if err != nil {
+				return fmt.Errorf("get config path: %w", err)
+			}
+
+			if _, err := config.Load(path); err != nil {
+				return fmt.Errorf("load config: %w", err)
+			}
+		}
+
+		return nil
+	},
 }
 
 func init() {
 	rootCmd.PersistentFlags().StringVar(
-		&configPath,
+		&cfgPath,
 		"config",
-		getDefaultConfigPath(),
+		"",
 		"Path to validump configuration file",
 	)
 }
 
 func Execute() error {
-	return rootCmd.Execute(); 
+	return rootCmd.Execute()
 }
 
-func getDefaultConfigPath() string {
-	configRoot := "validump"
-	// check if XDG_CONFIG_HOME variable is overriding default config path to ~/.config
-	if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" {
-		return filepath.Join(xdg, configRoot)
+func getConfigPath() (string, error) {
+	if cfgPath != "" {
+		// config paths explicitly set without a file extension
+		// should have .yaml extension appended by default
+		if filepath.Ext(cfgPath) == "" {
+			cfgPath += ".yaml"
+		}
+		return filepath.Abs(cfgPath)
 	}
 
-	// use ~/.config path for Mac and Linux systems
-	if runtime.GOOS == "darwin" || runtime.GOOS == "linux" {
-		homeDir, err := os.UserHomeDir()
+	var cfgDir string
+	var err error
+
+	// check if $XDG_CONFIG_HOME is overriding default config path
+	if xdg := os.Getenv("XDG_CONFIG_HOME"); xdg != "" && filepath.IsAbs(xdg) {
+		cfgDir = xdg
+	} else {
+		// fallback to default user profile config path
+		cfgDir, err = os.UserConfigDir()
 		if err != nil {
-			fmt.Println("retrieve user home directory: ", err)
-			return ""
-		}	
-		return filepath.Join(homeDir, ".config", configRoot)
+			return "", fmt.Errorf("retrieve default configuration directory: %w", err)
+		}
 	}
 
-	// fallback to default user profile config path (default path for Windows systems)
-	defaultConfigDir, err := os.UserConfigDir()
-	if err != nil {
-		fmt.Println("retrieve default configuration directory: ", err)
-		return ""
-	} 
-
-	configPath := filepath.Join(defaultConfigDir, configRoot)
-
-	return configPath
+	return filepath.Join(cfgDir, "validump", "validump.yaml"), nil
 }
