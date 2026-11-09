@@ -6,9 +6,8 @@ import (
 	"os"
 	"path/filepath"
 
-	"github.com/dannyjimenez98/validump/internal/config"
+	"github.com/dannyjimenez98/validump/internal/static"
 	"github.com/spf13/cobra"
-	"go.yaml.in/yaml/v4"
 )
 
 // initCmd represents the init command
@@ -41,29 +40,6 @@ var initCmd = &cobra.Command{
 			return fmt.Errorf("%s already exists and was not overwritten", cfgPath)
 		}
 
-		// generate initial config template with default values
-		home, err := os.UserHomeDir()
-		if err != nil {
-			return fmt.Errorf("resolve home directory path: %w", err)
-		}
-		cfg := &config.Config{
-			BackupDir: filepath.Join(home, "validump", "backups"),
-			Databases: map[string]config.DBConfig{
-				"db-alias": {
-					Engine: "postgres",
-					Host: "localhost",
-					Port: 5432,
-					Username: "dbuser",
-					DBName: "dbname",
-				},
-			},
-		}
-
-		dbConfig, err := yaml.Marshal(&cfg)
-		if err != nil {
-			return fmt.Errorf("marshal database configuration: %w", err)
-		}
-		
 		// create config directory path if it does not exist
 		if err := os.MkdirAll(filepath.Dir(cfgPath), 0700); err != nil {
 			return fmt.Errorf("create validump config directory: %w", err)
@@ -76,7 +52,7 @@ var initCmd = &cobra.Command{
 		}
 		defer file.Close()
 
-		if _, err := file.Write(dbConfig); err != nil {
+		if _, err := file.Write(static.ConfigTemplate); err != nil {
 			return fmt.Errorf("write yaml configuration: %w", err)
 		}
 

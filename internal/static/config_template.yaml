@@ -1,0 +1,13 @@
+# By default, database backups will be located in <user-home>/validump/backups
+# Uncomment the line below to specify a custom location.
+# backup_dir: /path/to/validump/backups
+
+databases:
+  # Edit "db-alias" to how you want to name your first database configuration  
+  # i.e. production, development, etc.
+    db-alias:
+        engine: postgres
+        host: localhost
+        port: 5432
+        username: dbuser
+        dbname: dbname
