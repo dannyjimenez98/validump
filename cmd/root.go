@@ -59,6 +59,10 @@ func getConfigPath() (string, error) {
 		return filepath.Abs(cfgPath)
 	}
 
+	if envCfg := os.Getenv("VALIDUMP_CONFIG"); envCfg != "" {
+		return filepath.Abs(envCfg)
+	}
+
 	var cfgDir string
 	var err error
 
