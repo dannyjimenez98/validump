@@ -3,11 +3,18 @@
 # backup_dir: /path/to/validump/backups
 
 databases:
-  # Edit "db-alias" to how you want to name your first database configuration  
+  # Edit "dbalias" to how you want to name your first database configuration
   # i.e. production, development, etc.
-    db-alias:
+    dbalias:
         engine: postgres
         host: localhost
         port: 5432
-        username: dbuser
-        dbname: dbname
+        username: postgres
+        dbname: postgres
+
+        # password (optional) :
+        # It is recommended that you store your database passwords using
+        # an environment variable. It should follow this format, replacing
+        # <DBALIAS> with the alias you set for that database configuration:
+        # VALIDUMP_DATABASES_<DBALIAS>_PASSWORD
+        # ex. production -> VALIDUMP_DATABASES_PRODUCTION_PASSWORD
