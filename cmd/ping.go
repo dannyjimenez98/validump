@@ -15,7 +15,7 @@ import (
 var pingCmd = &cobra.Command{
 	Use:   "ping",
 	Short: "test the database connection",
-	Long: ``,
+	Long:  ``,
 	RunE: func(cmd *cobra.Command, args []string) error {
 		connStr := os.Getenv("DB_CONNECTION_STR")
 		if connStr == "" {
@@ -27,7 +27,7 @@ var pingCmd = &cobra.Command{
 
 		connection, err := pgxpool.New(ctx, connStr)
 		if err != nil {
-			return fmt.Errorf("create database connection: %w", err) 
+			return fmt.Errorf("create database connection: %w", err)
 		}
 		defer connection.Close()
 

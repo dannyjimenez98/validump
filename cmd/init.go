@@ -7,6 +7,7 @@ import (
 	"path/filepath"
 
 	"github.com/dannyjimenez98/validump/internal/static"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
@@ -55,6 +56,8 @@ var initCmd = &cobra.Command{
 		if _, err := file.Write(static.ConfigTemplate); err != nil {
 			return fmt.Errorf("write yaml configuration: %w", err)
 		}
+
+		fmt.Printf(color.GreenString("\nconfiguration initialized at %s\n"), cfgPath)
 
 		return nil
 	},

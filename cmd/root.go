@@ -6,6 +6,7 @@ import (
 	"path/filepath"
 
 	"github.com/dannyjimenez98/validump/internal/config"
+	"github.com/fatih/color"
 	"github.com/spf13/cobra"
 )
 
@@ -35,6 +36,7 @@ var rootCmd = &cobra.Command{
 }
 
 func init() {
+	rootCmd.SetErrPrefix(color.RedString("Error:"))
 	rootCmd.PersistentFlags().StringVar(
 		&cfgPath,
 		"config",
