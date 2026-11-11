@@ -12,7 +12,7 @@ import (
 func Load(configPath string) (*viper.Viper, error) {
 	v := viper.New()
 	v.SetEnvPrefix("VALIDUMP")
-	v.SetEnvKeyReplacer(strings.NewReplacer(".", "_"))
+	v.SetEnvKeyReplacer(strings.NewReplacer(".", "__"))
 	v.AutomaticEnv()
 
 	v.SetConfigFile(configPath)

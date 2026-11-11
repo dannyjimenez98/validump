@@ -19,16 +19,23 @@ var rootCmd = &cobra.Command{
 
 	It allows for scheduled backups of your database and tests the backed up data in a containerized
 	enviroment to ensure that the database can be successfully recovered in the event of an emergency.`,
+	SilenceUsage: true,
 	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		if cmd.Annotations["skipLoadConfig"] != "true" {
-			path, err := getConfigPath()
-			if err != nil {
-				return fmt.Errorf("get config path: %w", err)
-			}
+		if cmd.Annotations["skipLoadConfig"] == "true" {
+			return nil
+		}
 
-			if _, err := config.Load(path); err != nil {
-				return fmt.Errorf("load config: %w", err)
-			}
+		path, err := getConfigPath()
+		if err != nil {
+			return fmt.Errorf("get config path: %w", err)
+		}
+
+		if err := config.Validate(path); err != nil {
+			return fmt.Errorf("validate config: %w", err)
+		}
+
+		if _, err := config.Load(path); err != nil {
+			return fmt.Errorf("load config: %w", err)
 		}
 
 		return nil
