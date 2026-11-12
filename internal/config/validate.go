@@ -75,6 +75,61 @@ func Validate(cfgFile string) error {
 		if len(dbConfig) == 0 {
 			return fmt.Errorf("database '%s' must contain a configuration mapping", dbAlias)
 		}
+
+		if err := validateDBConfig(dbConfig); err != nil {
+			return fmt.Errorf("invalid configuration for '%s': %w", dbAlias, err)
+		}
 	}
+	return nil
+}
+
+func validateDBConfig(dbConfig map[string]any) error {
+	engine, ok := dbConfig["engine"].(string)
+	if !ok || strings.TrimSpace(engine) == "" {
+		return fmt.Errorf("'engine' must be a non-empty string")
+	}
+
+	var requiredFields []string
+	var requiresPort bool
+
+	switch engine {
+	case "postgres":
+		requiredFields = []string{"host", "username", "dbname"}
+		requiresPort = true
+
+	default:
+		return fmt.Errorf("unsupported database engine %q", engine)
+	}
+
+	for _, field := range requiredFields {
+		value, exists := dbConfig[field]
+		if !exists {
+			return fmt.Errorf("required field %q is missing", field)
+		}
+		text, ok := value.(string)
+		if !ok || strings.TrimSpace(text) == "" {
+			return fmt.Errorf("field %q must be a non-empty string", field)
+		}
+	}
+
+	// validate port when required or explicitly provided
+	portValue, hasPort := dbConfig["port"]
+	if requiresPort && !hasPort {
+		return fmt.Errorf("required field 'port' is missing")
+	}
+	if hasPort {
+		port, ok := portValue.(int)
+		if !ok || port < 1 || port > 65535 {
+			return fmt.Errorf("'port' must be an integer between 1 and 65535")
+		}
+	}
+
+	// passwords are optional because they may come from the environment
+	if password, exists := dbConfig["password"]; exists {
+		if _, ok := password.(string); !ok {
+			return fmt.Errorf("'password' must be a string")
+		}
+	}
+
 	return nil
 }
