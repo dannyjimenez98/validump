@@ -1,12 +1,16 @@
 package config
 
 type Config struct {
-	Databases map[string]DBConfig `yaml:"databases"`
+	BackupDir string              `mapstructure:"backup_dir"`
+	Databases map[string]DBConfig `mapstructure:"databases"`
 }
 
 type DBConfig struct {
-	Type string `yaml:"type"`
-	ConnectionStr string `yaml:"connection_str"`
-	BackupDir string `yaml:"backup_dir"`
+	Engine   string `mapstructure:"engine"`
+	Host     string `mapstructure:"host"`
+	Port     uint16 `mapstructure:"port"`
+	Username string `mapstructure:"username"`
+	Password string `mapstructure:"password"`
+	DBName   string `mapstructure:"dbname"`
+	SSLMode  string `mapstructure:"sslmode"`
 }
-
