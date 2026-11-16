@@ -8,48 +8,61 @@ import (
 	"github.com/dannyjimenez98/validump/internal/config"
 	"github.com/fatih/color"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
-var cfgPath string
-
-var rootCmd = &cobra.Command{
-	Use:   "validump",
-	Short: "A CLI tool for database backups and recovery validation.",
-	Long: `Validump is a CLI-based database backup utility and disaster recovery validation tool.
-
-	It allows for scheduled backups of your database and tests the backed up data in a containerized
-	enviroment to ensure that the database can be successfully recovered in the event of an emergency.`,
-	SilenceUsage: true,
-	PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
-		if cmd.Annotations["skipLoadConfig"] == "true" {
-			return nil
-		}
-
-		path, err := getConfigPath()
-		if err != nil {
-			return fmt.Errorf("get config path: %w", err)
-		}
-
-		if err := config.Validate(path); err != nil {
-			return fmt.Errorf("validate config: %w", err)
-		}
-
-		if _, err := config.Load(path); err != nil {
-			return fmt.Errorf("load config: %w", err)
-		}
-
-		return nil
-	},
+type App struct {
+	ViperConfig *viper.Viper
 }
 
-func init() {
-	rootCmd.SetErrPrefix(color.RedString("Error:"))
-	rootCmd.PersistentFlags().StringVar(
+var cfgPath string
+var rootCmd = newRootCmd()
+
+func newRootCmd() *cobra.Command {
+	app := &App{}
+	root := &cobra.Command{
+		Use:   "validump",
+		Short: "A CLI tool for database backups and recovery validation.",
+		Long: `Validump is a CLI-based database backup utility and disaster recovery validation tool.
+
+		It allows for scheduled backups of your database and tests the backed up data in a containerized
+		enviroment to ensure that the database can be successfully recovered in the event of an emergency.`,
+		SilenceUsage: true,
+		PersistentPreRunE: func(cmd *cobra.Command, args []string) error {
+			if cmd.Annotations["skipLoadConfig"] == "true" {
+				return nil
+			}
+
+			path, err := getConfigPath()
+			if err != nil {
+				return fmt.Errorf("get config path: %w", err)
+			}
+
+			if err := config.Validate(path); err != nil {
+				return fmt.Errorf("validate config: %w", err)
+			}
+
+			v, err := config.Load(path)
+			if err != nil {
+				return fmt.Errorf("load config: %w", err)
+			}
+
+			app.ViperConfig = v
+
+			return nil
+		},
+	}
+
+	root.AddCommand(newPingCmd(app))
+	root.SetErrPrefix(color.RedString("Error:"))
+	root.PersistentFlags().StringVar(
 		&cfgPath,
 		"config",
 		"",
 		"Path to validump configuration file",
 	)
+
+	return root
 }
 
 func Execute() error {

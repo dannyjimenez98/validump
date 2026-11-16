@@ -16,5 +16,5 @@ databases:
         # It is recommended that you store your database passwords using
         # an environment variable. It should follow this format, replacing
         # <DBALIAS> with the alias you set for that database configuration:
-        # VALIDUMP_DATABASES_<DBALIAS>_PASSWORD
-        # ex. production -> VALIDUMP_DATABASES_PRODUCTION_PASSWORD
+        # VALIDUMP_DATABASES__<DBALIAS>__PASSWORD
+        # ex. production -> VALIDUMP_DATABASES__PRODUCTION__PASSWORD
