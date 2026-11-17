@@ -54,6 +54,7 @@ func newRootCmd() *cobra.Command {
 	}
 
 	root.AddCommand(newPingCmd(app))
+	root.AddCommand(newBackupCmd(app))
 	root.SetErrPrefix(color.RedString("Error:"))
 	root.PersistentFlags().StringVar(
 		&cfgPath,
