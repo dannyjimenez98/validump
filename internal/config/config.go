@@ -9,7 +9,7 @@ type DBConfig struct {
 	Engine   string `mapstructure:"engine"`
 	Host     string `mapstructure:"host"`
 	Port     uint16 `mapstructure:"port"`
-	Username string `mapstructure:"username"`
+	User     string `mapstructure:"user"`
 	Password string `mapstructure:"password"`
 	DBName   string `mapstructure:"dbname"`
 	SSLMode  string `mapstructure:"sslmode"`

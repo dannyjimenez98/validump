@@ -61,7 +61,7 @@ func Connect(ctx context.Context, cfg *viper.Viper, dbalias string) (*pgx.Conn, 
 func NewPgxConfig(alias string, db config.DBConfig) (*pgx.ConnConfig, error) {
 	uri := url.URL{
 		Scheme: "postgres",
-		User:   url.User(db.Username),
+		User:   url.User(db.User),
 		Host:   net.JoinHostPort(db.Host, strconv.Itoa(int(db.Port))),
 		Path:   "/" + db.DBName,
 	}

@@ -27,7 +27,7 @@ func (svc *Service) Backup() error {
 			pgDumpPath,
 			"-h", svc.db.Host,
 			"-p", strconv.Itoa(int(svc.db.Port)),
-			"-U", svc.db.Username,
+			"-U", svc.db.User,
 			"-d", svc.db.DBName,
 			"-F", svc.opts.Format,
 			"-Z", svc.opts.Compression,

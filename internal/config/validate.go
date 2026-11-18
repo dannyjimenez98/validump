@@ -94,7 +94,7 @@ func validateDBConfig(dbConfig map[string]any) error {
 
 	switch engine {
 	case "postgres":
-		requiredFields = []string{"host", "username", "dbname"}
+		requiredFields = []string{"host", "user", "dbname"}
 		requiresPort = true
 
 	default:
