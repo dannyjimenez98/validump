@@ -5,13 +5,14 @@ import (
 	"os"
 	"path/filepath"
 
+	"github.com/dannyjimenez98/validump/internal/backup"
 	"github.com/dannyjimenez98/validump/internal/config"
-	"github.com/dannyjimenez98/validump/internal/databases/postgres"
 	"github.com/spf13/cobra"
 )
 
 // newBackupCmd represents the backup command
 func newBackupCmd(cfg *App) *cobra.Command {
+	opts := backup.Options{}
 	var backupCmd = &cobra.Command{
 		Use:   "backup <db-alias>",
 		Short: "Backup a database",
@@ -37,13 +38,14 @@ func newBackupCmd(cfg *App) *cobra.Command {
 				return fmt.Errorf("get config for database '%s': %w", dbalias, err)
 			}
 
-			// if dbCfg.Engine == "postgres" {
-			// postgres.Backup(dbCfg, backupDirPath, dbalias)
-			// }
+			svc := backup.NewService(dbalias, dbCfg, backupDirPath, opts)
 
-			return postgres.Backup(dbCfg, backupDirPath, dbalias)
+			return svc.Backup()
 		},
 	}
+	backupCmd.Flags().StringVar(&opts.Format, "format", "custom", "backup format: plain, custom, directory, tar (default: custom)")
+	backupCmd.Flags().StringVar(&opts.Compression, "compression", "gzip:6", "compression type (default: gzip:6)")
+
 	return backupCmd
 }
 
