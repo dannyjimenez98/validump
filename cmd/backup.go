@@ -40,12 +40,12 @@ func newBackupCmd(cfg *App) *cobra.Command {
 
 			svc := backup.NewService(dbalias, dbCfg, backupDir, opts)
 
-			return svc.Backup()
+			return svc.Backup(cmd.Context())
 		},
 	}
 	backupCmd.Flags().StringVarP(&opts.Format, "format", "F", "custom", "backup format: plain, custom, directory, tar (default: custom)")
 	backupCmd.Flags().BoolVarP(&opts.Compression, "compress", "c", false, "compression type")
-
+	backupCmd.Flags().DurationVarP(&opts.Timeout, "timeout", "t", 0, "maximum duration before timeout, e.g. 30s, 10m, 1h30m (default: 0 - timeout disabled)")
 	return backupCmd
 }
 

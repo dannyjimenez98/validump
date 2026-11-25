@@ -1,10 +1,15 @@
 package backup
 
-import "github.com/dannyjimenez98/validump/internal/config"
+import (
+	"time"
+
+	"github.com/dannyjimenez98/validump/internal/config"
+)
 
 type Options struct {
 	Format      string
 	Compression bool
+	Timeout time.Duration
 }
 
 type Service struct {

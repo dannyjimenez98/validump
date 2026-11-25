@@ -1,6 +1,7 @@
 package backup
 
 import (
+	"context"
 	"crypto/rand"
 	"encoding/hex"
 	"fmt"
@@ -14,11 +15,15 @@ import (
 	"github.com/dannyjimenez98/validump/internal/utils"
 )
 
-func (svc *Service) Backup() error {
+func (svc *Service) Backup(ctx context.Context) error {
 	dbalias := svc.alias
 	db := svc.db
 	opts := svc.opts
 	backupDir := svc.backupDir
+
+	if opts.Timeout < 0 {
+		return fmt.Errorf("timeout value cannot be negative")
+	}
 
 	if db.Engine == "postgres" {
 		filename, err := generateFileName(dbalias, opts.Format)
@@ -41,7 +46,14 @@ func (svc *Service) Backup() error {
 		}
 
 		dump := func(w io.Writer) error {
-			return postgres.Dump(w, args)
+			dumpCtx := ctx
+			if opts.Timeout > 0 {
+				var cancel context.CancelFunc
+				dumpCtx, cancel = context.WithTimeout(ctx, opts.Timeout)
+				defer cancel()
+			}
+
+			return postgres.Dump(dumpCtx, args, w)
 		}
 
 		if opts.Format == "directory" {
