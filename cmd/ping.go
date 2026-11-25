@@ -10,7 +10,7 @@ import (
 	"github.com/spf13/cobra"
 )
 
-// pingCmd represents the ping command
+// newPingCmd represents the ping command
 func newPingCmd(cfg *App) *cobra.Command {
 	var pingCmd = &cobra.Command{
 		Use:   "ping <db-alias>",
