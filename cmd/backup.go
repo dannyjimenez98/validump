@@ -20,16 +20,16 @@ func newBackupCmd(cfg *App) *cobra.Command {
 		RunE: func(cmd *cobra.Command, args []string) error {
 			dbalias := args[0]
 
-			backupDirPath := cfg.ViperConfig.GetString("backup_dir")
-			if backupDirPath == "" {
+			backupDir := cfg.ViperConfig.GetString("backup_dir")
+			if backupDir == "" {
 				home, err := os.UserHomeDir()
 				if err != nil {
 					return fmt.Errorf("get user home directory: %w", err)
 				}
-				backupDirPath = filepath.Join(home, "validump", dbalias)
+				backupDir = filepath.Join(home, "validump", dbalias)
 			}
 
-			if err := os.MkdirAll(backupDirPath, 0700); err != nil {
+			if err := os.MkdirAll(backupDir, 0700); err != nil {
 				return fmt.Errorf("create backups directory for database '%s': %w", dbalias, err)
 			}
 
@@ -38,13 +38,13 @@ func newBackupCmd(cfg *App) *cobra.Command {
 				return fmt.Errorf("get config for database '%s': %w", dbalias, err)
 			}
 
-			svc := backup.NewService(dbalias, dbCfg, backupDirPath, opts)
+			svc := backup.NewService(dbalias, dbCfg, backupDir, opts)
 
 			return svc.Backup()
 		},
 	}
-	backupCmd.Flags().StringVar(&opts.Format, "format", "custom", "backup format: plain, custom, directory, tar (default: custom)")
-	backupCmd.Flags().StringVar(&opts.Compression, "compression", "gzip:6", "compression type (default: gzip:6)")
+	backupCmd.Flags().StringVarP(&opts.Format, "format", "F", "custom", "backup format: plain, custom, directory, tar (default: custom)")
+	backupCmd.Flags().BoolVarP(&opts.Compression, "compress", "c", false, "compression type")
 
 	return backupCmd
 }
