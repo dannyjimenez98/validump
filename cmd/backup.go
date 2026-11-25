@@ -17,6 +17,7 @@ func newBackupCmd(cfg *App) *cobra.Command {
 		Use:   "backup <db-alias>",
 		Short: "Backup a database",
 		Long:  ``,
+		Args:  cobra.ExactArgs(1),
 		RunE: func(cmd *cobra.Command, args []string) error {
 			dbalias := args[0]
 

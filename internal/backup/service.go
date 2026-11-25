@@ -9,7 +9,7 @@ import (
 type Options struct {
 	Format      string
 	Compression bool
-	Timeout time.Duration
+	Timeout     time.Duration
 }
 
 type Service struct {
